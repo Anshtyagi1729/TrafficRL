@@ -1,0 +1,11 @@
+[project]
+name = "traffic-rl"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "gymnasium>=1.2.3",
+    "stable-baselines3[extra]>=2.7.1",
+    "sumo-rl>=1.4.5",
+]
