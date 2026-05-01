@@ -15,8 +15,7 @@ import numpy as np
 warnings.filterwarnings("ignore")
 
 if "SUMO_HOME" not in os.environ:
-    # Use raw string (r"") for Windows paths to handle backslashes properly
-    os.environ["SUMO_HOME"] = r"C:\Program Files (x86)\Eclipse\Sumo"
+    os.environ["SUMO_HOME"] = "/usr/share/sumo"
 
 import sumo_rl
 from stable_baselines3 import DQN, PPO
@@ -27,12 +26,21 @@ from stable_baselines3.common.monitor import Monitor
 METRICS_DIR = Path("metrics")
 METRICS_DIR.mkdir(exist_ok=True)
 
-NET_FILE = "sumo-rl/sumo_rl/nets/single-intersection/single-intersection.net.xml"
-ROUTE_FILE = "sumo-rl/sumo_rl/nets/single-intersection/single-intersection.rou.xml"
+BASE = Path(__file__).parent
+NET_FILE = str(
+    BASE / "sumo-rl/sumo_rl/nets/single-intersection/single-intersection.net.xml"
+)
+ROUTE_FILE = str(
+    BASE / "sumo-rl/sumo_rl/nets/single-intersection/single-intersection.rou.xml"
+)
+VIEW_FILE = str(BASE / "viewsettings.xml")
+print(f"[DEBUG] VIEW_FILE = {VIEW_FILE}")
+print(f"[DEBUG] exists = {Path(VIEW_FILE).exists()}")
 SEED = 42
 
 
 # Metrics writer
+
 
 class MetricsWriter:
     """Writes episode metrics to CSV and status to JSON after every episode."""
@@ -110,7 +118,6 @@ class MetricsWriter:
         tmp.replace(self.status_path)
 
 
-
 # Environment factory
 def make_env() -> gym.Env:
     env = sumo_rl.SumoEnvironment(
@@ -122,21 +129,33 @@ def make_env() -> gym.Env:
         yellow_time=2,
         reward_fn="diff-waiting-time",
         sumo_seed=SEED,
-        single_agent=True
+        single_agent=True,
+        sumo_warnings=False,
+        additional_sumo_cmd=f"--gui-settings-file {VIEW_FILE}",
     )
     return Monitor(env)
+
+
 if __name__ == "__main__":
+    import traci
+
     env = make_env()
     obs, info = env.reset()
-    
+
+    # Force dark scheme + zoom via traci GUI API
+    try:
+        traci.gui.setSchema("View #0", "dark-traffic")
+        traci.gui.setZoom("View #0", 150)
+        traci.gui.setOffset("View #0", 200, 150)
+        print("[GUI] dark-traffic scheme + zoom applied")
+    except Exception as e:
+        print(f"[GUI] traci GUI setup failed: {e}")
+
     print("Environment loaded! Check the SUMO GUI.")
-    
+
     done = False
     while not done:
-        # Take a random traffic light action to keep time moving
-        action = env.action_space.sample() 
-        
-        # Step the simulation forward
+        action = env.action_space.sample()
         obs, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
 

@@ -15,8 +15,7 @@ import numpy as np
 warnings.filterwarnings("ignore")
 
 if "SUMO_HOME" not in os.environ:
-    # Use raw string (r"") for Windows paths to handle backslashes properly
-    os.environ["SUMO_HOME"] = r"C:\Program Files (x86)\Eclipse\Sumo"
+    os.environ["SUMO_HOME"] = "/usr/share/sumo"
 
 import sumo_rl
 from stable_baselines3 import DQN, PPO
@@ -29,6 +28,7 @@ METRICS_DIR.mkdir(exist_ok=True)
 
 NET_FILE = "sumo-rl/sumo_rl/nets/single-intersection/single-intersection.net.xml"
 ROUTE_FILE = "sumo-rl/sumo_rl/nets/single-intersection/single-intersection.rou.xml"
+VIEW_FILE = "viewsettings.xml"
 SEED = 42
 
 

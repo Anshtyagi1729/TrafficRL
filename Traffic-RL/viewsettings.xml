@@ -1,0 +1,117 @@
+<viewsettings>
+    <scheme name="dark-traffic">
+        <background backgroundColor="15,15,20" showGrid="0" gridXSize="100.00" gridYSize="100.00"/>
+        <edges laneEdgeMode="0" scaleMode="0" laneShowBorders="1" showBikeMarkings="0"
+               showLinkDecals="1" showLinkRules="1" showRails="0" hideConnectors="0"
+               widthExaggeration="1.00" minSize="0.00" showDirection="0" showSublanes="1"
+               spreadSuperposed="0"
+               edgeName_show="0" edgeName_size="50.00" edgeName_color="orange" edgeName_constantSize="1"
+               internalEdgeName_show="0" internalEdgeName_size="40.00" internalEdgeName_color="128,64,0" internalEdgeName_constantSize="1"
+               cwaEdgeName_show="0" cwaEdgeName_size="50.00" cwaEdgeName_color="magenta" cwaEdgeName_constantSize="1"
+               streetName_show="0" streetName_size="55.00" streetName_color="yellow" streetName_constantSize="1">
+            <colorScheme name="uniform">
+                <entry color="50,52,60" name="road"/>
+                <entry color="80,80,90" name="sidewalk"/>
+                <entry color="192,66,44" name="bike lane"/>
+                <entry color="0,0,0,0" name="green verge"/>
+                <entry color="150,200,200" name="waterway"/>
+                <entry color="92,92,92" name="no passenger"/>
+                <entry color="red" name="closed"/>
+                <entry color="green" name="connector"/>
+            </colorScheme>
+        </edges>
+        <vehicles vehicleMode="8" vehicleQuality="2" vehicle_minSize="0.00" vehicle_exaggeration="1.50"
+                  vehicle_constantSize="0" showBlinker="1"
+                  vehicleName_show="0" vehicleName_size="50.00" vehicleName_color="204,153,0" vehicleName_constantSize="1">
+            <colorScheme name="given vehicle/type/route color">
+                <entry color="0,180,255"/>
+            </colorScheme>
+            <colorScheme name="uniform">
+                <entry color="0,180,255"/>
+            </colorScheme>
+            <colorScheme name="given/assigned vehicle color">
+                <entry color="0,180,255"/>
+            </colorScheme>
+            <colorScheme name="given/assigned type color">
+                <entry color="0,180,255"/>
+            </colorScheme>
+            <colorScheme name="given/assigned route color">
+                <entry color="0,180,255"/>
+            </colorScheme>
+            <colorScheme name="depart position as HSV">
+                <entry color="0,180,255"/>
+            </colorScheme>
+            <colorScheme name="arrival position as HSV">
+                <entry color="0,180,255"/>
+            </colorScheme>
+            <colorScheme name="direction/distance as HSV">
+                <entry color="0,180,255"/>
+            </colorScheme>
+            <colorScheme name="by speed" interpolated="1">
+                <entry color="red" threshold="0.00"/>
+                <entry color="yellow" threshold="8.33"/>
+                <entry color="green" threshold="15.28"/>
+                <entry color="cyan" threshold="22.22"/>
+                <entry color="blue" threshold="33.33"/>
+                <entry color="magenta" threshold="41.67"/>
+            </colorScheme>
+            <colorScheme name="by action step" interpolated="1">
+                <entry color="grey" threshold="0.00"/>
+                <entry color="green" threshold="1.00"/>
+                <entry color="80,160,80" threshold="2.00"/>
+            </colorScheme>
+            <colorScheme name="by waiting time" interpolated="1">
+                <entry color="0,180,255" threshold="0.00"/>
+                <entry color="0,255,150" threshold="30.00"/>
+                <entry color="255,220,0" threshold="100.00"/>
+                <entry color="255,80,0" threshold="200.00"/>
+                <entry color="220,0,30" threshold="300.00"/>
+            </colorScheme>
+            <colorScheme name="by accumulated waiting time" interpolated="1">
+                <entry color="blue" threshold="0.00"/>
+                <entry color="cyan" threshold="25.00"/>
+                <entry color="green" threshold="50.00"/>
+                <entry color="yellow" threshold="75.00"/>
+                <entry color="red" threshold="100.00"/>
+            </colorScheme>
+            <colorScheme name="by time since lane change" interpolated="1">
+                <entry color="189,189,179" threshold="-180.00"/>
+                <entry color="yellow" threshold="-20.00"/>
+                <entry color="blue" threshold="0.00"/>
+                <entry color="179,179,179" threshold="0.00"/>
+                <entry color="red" threshold="-0.00"/>
+                <entry color="cyan" threshold="20.00"/>
+                <entry color="179,189,189" threshold="180.00"/>
+            </colorScheme>
+            <colorScheme name="by max speed" interpolated="1">
+                <entry color="red" threshold="0.00"/>
+                <entry color="yellow" threshold="8.33"/>
+                <entry color="green" threshold="15.28"/>
+                <entry color="cyan" threshold="22.22"/>
+                <entry color="blue" threshold="33.33"/>
+                <entry color="magenta" threshold="41.67"/>
+            </colorScheme>
+            <colorScheme name="by selection">
+                <entry color="179,179,179" name="unselected"/>
+                <entry color="0,102,204" name="selected"/>
+            </colorScheme>
+            <colorScheme name="random">
+                <entry color="0,180,255"/>
+            </colorScheme>
+        </vehicles>
+        <junctions junctionMode="0"
+                   drawLinkTLIndex_show="0" drawLinkTLIndex_size="50.00" drawLinkTLIndex_color="128,128,255" drawLinkTLIndex_constantSize="1"
+                   drawLinkJunctionIndex_show="0" drawLinkJunctionIndex_size="50.00" drawLinkJunctionIndex_color="128,128,255" drawLinkJunctionIndex_constantSize="1"
+                   junctionName_show="0" junctionName_size="50.00" junctionName_color="0,255,128" junctionName_constantSize="1"
+                   internalJunctionName_show="0" internalJunctionName_size="50.00" internalJunctionName_color="0,204,128" internalJunctionName_constantSize="1"
+                   showLane2Lane="0" drawShape="1" drawCrossingsAndWalkingareas="1"
+                   junction_minSize="1.00" junction_exaggeration="1.00" junction_constantSize="0">
+            <colorScheme name="uniform">
+                <entry color="25,25,35"/>
+            </colorScheme>
+        </junctions>
+        <additionals addMode="0" add_minSize="1.00" add_exaggeration="1.00" add_constantSize="0"/>
+        <legend showSizeLegend="1"/>
+    </scheme>
+    <delay value="50.00"/>
+</viewsettings>
