@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-05-01 10:53:18.044271 by Eclipse SUMO tileGet.py v1.26.0
+  options: -n jiit.net.xml -t 16 -d . -s map_decals.xml -m cartolight
+-->
+
+<viewsettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/viewsettings_file.xsd">
+    <decal file="tile23424_13670.jpeg" centerX="-2.3989775018999353" centerY="3202.4920003851876" width="1096.0788234439678" height="1048.5110546881333" layer="0"/>
+    <decal file="tile23424_13671.jpeg" centerX="18.570797311956994" centerY="2132.849654285237" width="1096.1725054471754" height="1048.6123983561993" layer="0"/>
+    <decal file="tile23424_13672.jpeg" centerX="39.53597451664973" centerY="1063.1105739488266" width="1096.2661631747615" height="1048.7137233922258" layer="0"/>
+    <decal file="tile23424_13673.jpeg" centerX="60.496551327756606" centerY="-6.725219174288213" width="1096.3597966134548" height="1048.8150297868997" layer="0"/>
+    <decal file="tile23425_13670.jpeg" centerX="1072.759235796053" centerY="3223.6225237115286" width="1096.1817350953352" height="1048.416862721555" layer="0"/>
+    <decal file="tile23425_13671.jpeg" centerX="1093.827279513469" centerY="2153.975566721987" width="1096.275398443453" height="1048.5182307101786" layer="0"/>
+    <decal file="tile23425_13672.jpeg" centerX="1114.8907041241182" centerY="1084.2318726801313" width="1096.369037502911" height="1048.6195800779387" layer="0"/>
+    <decal file="tile23425_13673.jpeg" centerX="1135.9495068305405" centerY="14.3914630333893" width="1096.4626522604376" height="1048.7209108201787" layer="0"/>
+    <decal file="tile23426_13670.jpeg" centerX="2147.922093349858" centerY="3244.851839170791" width="1096.2846711920574" height="1048.3226894000545" layer="0"/>
+    <decal file="tile23426_13671.jpeg" centerX="2169.0884088136954" centerY="2175.2002497836947" width="1096.3783158985898" height="1048.4240817194805" layer="0"/>
+    <decal file="tile23426_13672.jpeg" centerX="2190.2500836731633" centerY="1105.4519205135293" width="1096.471936302958" height="1048.525455435738" layer="0"/>
+    <decal file="tile23426_13673.jpeg" centerX="2211.407115117414" centerY="35.60687280772254" width="1096.5655323923565" height="1048.6268105348572" layer="0"/>
+</viewsettings>

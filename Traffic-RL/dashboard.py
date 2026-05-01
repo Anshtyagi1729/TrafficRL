@@ -1,4 +1,5 @@
 import json
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -255,8 +256,8 @@ with st.sidebar:
 
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-tab_overview, tab_curves, tab_compare, tab_marl, tab_video = st.tabs(
-    ["Overview", "Training Curves", "Comparison", "MARL — 2×2 Grid", "Simulation"]
+tab_overview, tab_curves, tab_compare, tab_marl, tab_video, tab_realworld = st.tabs(
+    ["Overview", "Training Curves", "Comparison", "MARL — 2×2 Grid", "Simulation", "Real World — JIIT"]
 )
 
 
@@ -695,12 +696,119 @@ with tab_video:
             )
 
     st.markdown("---")
+
+    # MARL 2×2 grid video
+    st.markdown(
+        "<p style='color:#64748b;font-size:0.75rem;font-weight:600;"
+        "text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.75rem;'>"
+        "2×2 Grid — MARL IPPO (4 agents)</p>",
+        unsafe_allow_html=True,
+    )
+    v_marl = VIDEOS_DIR / "marl_ippo.mp4"
+    if v_marl.exists():
+        st.video(str(v_marl))
+    else:
+        st.markdown(
+            _VIDEO_PLACEHOLDER.format(
+                title="No recording yet",
+                desc="4 independent PPO agents coordinating across a 2×2 intersection grid",
+                cmd="uv run record.py --mode marl_ippo",
+            ),
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
     st.markdown(
         "<p style='color:#475569;font-size:0.82rem;'>"
-        "Videos are recorded with SUMO GUI using a dark theme. "
+        "Videos recorded with SUMO GUI — dark theme. "
         "Vehicle colour encodes speed: "
         "<span style='color:#008000;font-weight:600;'>green = fast</span>, "
         "<span style='color:#ef4444;font-weight:600;'>red = stopped</span>."
         "</p>",
         unsafe_allow_html=True,
     )
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# TAB 6 — REAL WORLD JIIT
+# ════════════════════════════════════════════════════════════════════════════
+JIIT_DIR = BASE / "jiit-intersection"
+
+with tab_realworld:
+    st.markdown("### Real-World Simulation — JIIT Noida Intersection")
+    st.markdown("---")
+
+    col_info, col_map = st.columns([1, 1])
+
+    with col_info:
+        st.markdown(
+            """
+            <div style='background:#1a1d27;border:1px solid #2d3450;border-radius:10px;padding:1.5rem;'>
+            <p style='color:#64748b;font-size:0.7rem;font-weight:600;text-transform:uppercase;
+               letter-spacing:0.08em;margin:0 0 0.75rem;'>Network Details</p>
+
+            <table style='width:100%;border-collapse:collapse;font-size:0.85rem;'>
+            <tr><td style='color:#64748b;padding:0.3rem 0;'>Source</td>
+                <td style='color:#e2e8f0;text-align:right;'>OpenStreetMap</td></tr>
+            <tr><td style='color:#64748b;padding:0.3rem 0;'>Location</td>
+                <td style='color:#e2e8f0;text-align:right;'>Sector 62, Noida</td></tr>
+            <tr><td style='color:#64748b;padding:0.3rem 0;'>Coordinates</td>
+                <td style='color:#e2e8f0;text-align:right;'>28°31′50″N 77°21′44″E</td></tr>
+            <tr><td style='color:#64748b;padding:0.3rem 0;'>Signal Phases</td>
+                <td style='color:#e2e8f0;text-align:right;'>5 green phases</td></tr>
+            <tr><td style='color:#64748b;padding:0.3rem 0;'>Vehicles/hour</td>
+                <td style='color:#e2e8f0;text-align:right;'>~1800</td></tr>
+            <tr><td style='color:#64748b;padding:0.3rem 0;'>Simulation time</td>
+                <td style='color:#e2e8f0;text-align:right;'>3600 s</td></tr>
+            </table>
+
+            <p style='color:#475569;font-size:0.78rem;margin:1rem 0 0;'>
+            Network generated via <code>netconvert</code> from OSM data.
+            Map tiles from Carto Light (zoom 17).
+            Vehicle colour encodes speed —
+            <span style='color:#ef4444;'>red = stopped</span>,
+            <span style='color:#3b82f6;'>blue = fast</span>.
+            </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
+
+        net_ok   = (JIIT_DIR / "jiit.net.xml").exists()
+        route_ok = (JIIT_DIR / "jiit.rou.xml").exists()
+        view_ok  = (JIIT_DIR / "jiit_view.xml").exists()
+        ready    = net_ok and route_ok and view_ok
+
+        if ready:
+            if st.button("Launch SUMO Simulation", type="primary", use_container_width=True):
+                subprocess.Popen(
+                    [
+                        "sumo-gui",
+                        "-n", str(JIIT_DIR / "jiit.net.xml"),
+                        "-r", str(JIIT_DIR / "jiit.rou.xml"),
+                        "--gui-settings-file", str(JIIT_DIR / "jiit_view.xml"),
+                        "--start",
+                        "--delay", "80",
+                    ],
+                    cwd=str(JIIT_DIR),
+                )
+                st.success("SUMO GUI launched — check your taskbar.")
+        else:
+            missing = []
+            if not net_ok:   missing.append("jiit.net.xml")
+            if not route_ok: missing.append("jiit.rou.xml")
+            if not view_ok:  missing.append("jiit_view.xml")
+            st.error(f"Missing files: {', '.join(missing)}")
+
+    with col_map:
+        tile = JIIT_DIR / "tile46851_27345.jpeg"
+        if tile.exists():
+            st.image(str(tile), caption="Carto Light map tile — intersection area", use_container_width=True)
+        else:
+            st.markdown(
+                "<div style='background:#1a1d27;border:1px solid #2d3450;border-radius:10px;"
+                "padding:4rem;text-align:center;color:#475569;'>Map tile preview unavailable</div>",
+                unsafe_allow_html=True,
+            )
