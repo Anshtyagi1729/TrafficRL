@@ -136,6 +136,15 @@ def load_single(algo: str) -> pd.DataFrame | None:
 
 
 @st.cache_data(ttl=10)
+def load_jiit(algo: str) -> pd.DataFrame | None:
+    path = METRICS_DIR / "jiit" / f"{algo}_metrics.csv"
+    if not path.exists():
+        return None
+    df = pd.read_csv(path)
+    return df if not df.empty else None
+
+
+@st.cache_data(ttl=10)
 def load_marl(agent_id: str) -> pd.DataFrame | None:
     path = METRICS_DIR / "marl" / f"{agent_id}_metrics.csv"
     if not path.exists():
@@ -243,10 +252,13 @@ with st.sidebar:
     st.markdown(f"IPPO (4 agents) &nbsp; {badge(marl_state)}", unsafe_allow_html=True)
 
     st.markdown("---")
-    smoothing = st.slider(
-        "Smoothing window", 1, 20, 7, help="Rolling average over N episodes"
-    )
+    st.markdown("**JIIT Intersection**")
+    for algo in ["fixed", "ppo"]:
+        jiit_state = load_status(algo, "jiit").get("state", "pending")
+        lbl = "Fixed-Cycle" if algo == "fixed" else "PPO"
+        st.markdown(f"{lbl} &nbsp; {badge(jiit_state)}", unsafe_allow_html=True)
 
+    st.markdown("---")
     if st.button("Refresh data", use_container_width=True):
         st.cache_data.clear()
         st.rerun()
@@ -256,8 +268,8 @@ with st.sidebar:
 
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-tab_overview, tab_curves, tab_compare, tab_marl, tab_video, tab_realworld = st.tabs(
-    ["Overview", "Training Curves", "Comparison", "MARL — 2×2 Grid", "Simulation", "Real World — JIIT"]
+tab_overview, tab_curves, tab_compare, tab_marl, tab_video, tab_jiit_train, tab_realworld = st.tabs(
+    ["Overview", "Training Curves", "Comparison", "MARL — 2×2 Grid", "Simulation", "JIIT Training", "Real World — JIIT"]
 )
 
 
@@ -393,8 +405,8 @@ with tab_curves:
                 df = available[algo]
                 col = ALGO_META[algo]["color"]
                 lbl = ALGO_META[algo]["label"]
-                add_trace(fig_r, df, "episode", "reward", lbl, col, smoothing)
-                add_trace(fig_w, df, "episode", "waiting_time", lbl, col, smoothing)
+                add_trace(fig_r, df, "episode", "reward", lbl, col, 7)
+                add_trace(fig_w, df, "episode", "waiting_time", lbl, col, 7)
 
             st.plotly_chart(fig_r, use_container_width=True)
             st.plotly_chart(fig_w, use_container_width=True)
@@ -553,7 +565,7 @@ with tab_marl:
                     "reward",
                     meta["label"],
                     meta["color"],
-                    smoothing,
+                    7,
                 )
                 add_trace(
                     fig_w,
@@ -562,7 +574,7 @@ with tab_marl:
                     "waiting_time",
                     meta["label"],
                     meta["color"],
-                    smoothing,
+                    7,
                 )
 
         st.plotly_chart(fig_r, use_container_width=True)
@@ -730,7 +742,116 @@ with tab_video:
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# TAB 6 — REAL WORLD JIIT
+# TAB 6 — JIIT TRAINING
+# ════════════════════════════════════════════════════════════════════════════
+with tab_jiit_train:
+    st.markdown("### JIIT Intersection — PPO Training")
+    st.markdown(
+        "PPO trained on the real JIIT Noida network (OSM → SUMO). "
+        "5 green phases, 3600 s/episode, ~1800 vehicles/hour."
+    )
+    st.markdown("---")
+
+    jiit_fixed_df = load_jiit("fixed")
+    jiit_ppo_df   = load_jiit("ppo")
+    jiit_fixed_st = load_status("fixed", "jiit")
+    jiit_ppo_st   = load_status("ppo", "jiit")
+
+    # Status + progress
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(
+            f"**Fixed-Cycle (JIIT)** &nbsp; {badge(jiit_fixed_st.get('state', 'pending'))}",
+            unsafe_allow_html=True,
+        )
+        if jiit_fixed_st.get("state") == "running":
+            st.progress(jiit_fixed_st.get("progress", 0))
+    with c2:
+        st.markdown(
+            f"**PPO (JIIT)** &nbsp; {badge(jiit_ppo_st.get('state', 'pending'))}",
+            unsafe_allow_html=True,
+        )
+        if jiit_ppo_st.get("state") == "running":
+            st.progress(jiit_ppo_st.get("progress", 0))
+
+    if jiit_fixed_df is None and jiit_ppo_df is None:
+        st.info(
+            "No JIIT training data yet. Run:\n\n"
+            "```\n"
+            "uv run train.py --net jiit --algo fixed\n"
+            "uv run train.py --net jiit --algo ppo --steps 100000\n"
+            "```"
+        )
+    else:
+        # Summary cards
+        st.markdown("---")
+        cols = st.columns(3)
+        jiit_fixed_wait = final_stats(jiit_fixed_df)["wait"] if jiit_fixed_df is not None else None
+        jiit_ppo_wait   = final_stats(jiit_ppo_df)["wait"]   if jiit_ppo_df   is not None else None
+
+        with cols[0]:
+            if jiit_fixed_wait is not None:
+                st.metric("Fixed-Cycle Wait", f"{jiit_fixed_wait:.1f} s")
+        with cols[1]:
+            if jiit_ppo_wait is not None:
+                st.metric("PPO Wait", f"{jiit_ppo_wait:.1f} s")
+        with cols[2]:
+            if jiit_fixed_wait and jiit_ppo_wait and jiit_fixed_wait > 0:
+                imp = (jiit_fixed_wait - jiit_ppo_wait) / jiit_fixed_wait * 100
+                st.metric("Improvement", f"{imp:.1f}%", delta=f"−{imp:.1f}%")
+
+        # Training curves
+        fig_r = line_chart("PPO Reward per Episode — JIIT", "Reward")
+        fig_w = line_chart("Mean Waiting Time per Episode — JIIT", "Waiting Time (s)")
+
+        if jiit_ppo_df is not None:
+            add_trace(fig_r, jiit_ppo_df, "episode", "reward",       "PPO (JIIT)", "#10b981", 7)
+            add_trace(fig_w, jiit_ppo_df, "episode", "waiting_time", "PPO (JIIT)", "#10b981", 7)
+
+        if jiit_fixed_df is not None:
+            # Fixed-cycle is 1 episode — draw as horizontal reference line
+            fw = jiit_fixed_df["waiting_time"].iloc[-1]
+            fig_w.add_hline(
+                y=fw,
+                line_dash="dash",
+                line_color="#64748b",
+                annotation_text=f"Fixed-Cycle {fw:.1f}s",
+                annotation_font_color="#64748b",
+            )
+
+        st.plotly_chart(fig_r, use_container_width=True)
+        st.plotly_chart(fig_w, use_container_width=True)
+
+        # Compare JIIT PPO vs single-intersection PPO
+        single_ppo_df = load_single("ppo")
+        if jiit_ppo_df is not None and single_ppo_df is not None:
+            st.markdown("---")
+            st.markdown("#### JIIT PPO vs Single-Intersection PPO")
+            compare_labels = ["Single Intersection PPO", "JIIT PPO"]
+            compare_vals   = [
+                final_stats(single_ppo_df)["wait"],
+                final_stats(jiit_ppo_df)["wait"],
+            ]
+            compare_colors = ["#10b981", "#6366f1"]
+            fig = go.Figure(go.Bar(
+                x=compare_labels, y=compare_vals,
+                marker_color=compare_colors,
+                text=[f"{v:.1f} s" for v in compare_vals],
+                textposition="outside",
+                textfont=dict(color="#94a3b8"),
+            ))
+            fig.update_layout(
+                title=dict(text="Mean Waiting Time — PPO on both networks",
+                           font_color="#e2e8f0", font_size=14),
+                yaxis_title="Mean Waiting Time (s)",
+                showlegend=False,
+                **CHART,
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# TAB 7 — REAL WORLD JIIT
 # ════════════════════════════════════════════════════════════════════════════
 JIIT_DIR = BASE / "jiit-intersection"
 

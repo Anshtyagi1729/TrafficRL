@@ -21,15 +21,30 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.monitor import Monitor
 
 # ── Paths ────────────────────────────────────────────────────────────────────
-BASE       = Path(__file__).parent
-NET_FILE   = str(BASE / "sumo-rl/sumo_rl/nets/single-intersection/single-intersection.net.xml")
-ROUTE_FILE = str(BASE / "sumo-rl/sumo_rl/nets/single-intersection/single-intersection.rou.xml")
-METRICS_DIR = BASE / "metrics" / "single"
-MODELS_DIR  = BASE / "models"
+BASE = Path(__file__).parent
 SEED = 42
 
-METRICS_DIR.mkdir(parents=True, exist_ok=True)
-MODELS_DIR.mkdir(parents=True, exist_ok=True)
+_NETS = {
+    "single": {
+        "net":     str(BASE / "sumo-rl/sumo_rl/nets/single-intersection/single-intersection.net.xml"),
+        "route":   str(BASE / "sumo-rl/sumo_rl/nets/single-intersection/single-intersection.rou.xml"),
+        "metrics": BASE / "metrics" / "single",
+        "models":  BASE / "models",
+    },
+    "jiit": {
+        "net":     str(BASE / "jiit-intersection/jiit.net.xml"),
+        "route":   str(BASE / "jiit-intersection/jiit.rou.xml"),
+        "metrics": BASE / "metrics" / "jiit",
+        "models":  BASE / "models" / "jiit",
+    },
+}
+
+# These are overwritten by main() based on --net; kept as globals so make_env()
+# and MetricsWriter pick up the right paths at call time.
+NET_FILE    = _NETS["single"]["net"]
+ROUTE_FILE  = _NETS["single"]["route"]
+METRICS_DIR = _NETS["single"]["metrics"]
+MODELS_DIR  = _NETS["single"]["models"]
 
 
 # ── Metrics writer ────────────────────────────────────────────────────────────
@@ -270,8 +285,19 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--algo", required=True,
                         choices=["fixed", "qlearning", "dqn", "ppo"])
+    parser.add_argument("--net", choices=["single", "jiit"], default="single",
+                        help="Which intersection network to use")
     parser.add_argument("--steps", type=int, default=100_000)
     args = parser.parse_args()
+
+    global NET_FILE, ROUTE_FILE, METRICS_DIR, MODELS_DIR
+    cfg = _NETS[args.net]
+    NET_FILE    = cfg["net"]
+    ROUTE_FILE  = cfg["route"]
+    METRICS_DIR = cfg["metrics"]
+    MODELS_DIR  = cfg["models"]
+    METRICS_DIR.mkdir(parents=True, exist_ok=True)
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
     writer = MetricsWriter(args.algo, args.steps)
     try:
