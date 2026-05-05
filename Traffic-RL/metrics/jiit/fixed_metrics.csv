@@ -1,0 +1,2 @@
+episode,timestep,reward,waiting_time,mean_speed,elapsed_s
+1,720,-1712.21,752.5872,0.6685,63.31

@@ -213,8 +213,8 @@ def train_ippo(total_steps: int):
                 info = infos.get(a, {})
                 writers[a].log(
                     timestep, ep_rew,
-                    info.get("system_mean_waiting_time", 0.0),
-                    info.get("system_mean_speed", 0.0),
+                    info.get(f"{a}_accumulated_waiting_time", 0.0),
+                    info.get(f"{a}_average_speed", 0.0),
                 )
 
             write_marl_status(episode, total_steps // 720, ep_rewards)
