@@ -39,8 +39,7 @@ _NETS = {
     },
 }
 
-# These are overwritten by main() based on --net; kept as globals so make_env()
-# and MetricsWriter pick up the right paths at call time.
+# Overwritten by main() based on --net; globals so make_env() and MetricsWriter pick up correct paths.
 NET_FILE    = _NETS["single"]["net"]
 ROUTE_FILE  = _NETS["single"]["route"]
 METRICS_DIR = _NETS["single"]["metrics"]

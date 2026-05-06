@@ -268,8 +268,8 @@ with st.sidebar:
 
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-tab_overview, tab_curves, tab_compare, tab_marl, tab_video, tab_jiit_train, tab_realworld = st.tabs(
-    ["Overview", "Training Curves", "Comparison", "MARL — 2×2 Grid", "Simulation", "JIIT Training", "Real World — JIIT"]
+tab_overview, tab_curves, tab_compare, tab_marl, tab_video, tab_jiit_train, tab_realworld, tab_custom = st.tabs(
+    ["Overview", "Training Curves", "Comparison", "MARL — 2×2 Grid", "Simulation", "JIIT Training", "Real World — JIIT", "Custom Intersection"]
 )
 
 
@@ -748,7 +748,7 @@ with tab_jiit_train:
     st.markdown("### JIIT Intersection — PPO Training")
     st.markdown(
         "PPO trained on the real JIIT Noida network (OSM → SUMO). "
-        "5 green phases, 3600 s/episode, ~1800 vehicles/hour."
+        "1 TLS with 5 green phases, 3600 s/episode, 1800 vehicles/hour."
     )
     st.markdown("---")
 
@@ -757,18 +757,17 @@ with tab_jiit_train:
     jiit_fixed_st = load_status("fixed", "jiit")
     jiit_ppo_st   = load_status("ppo", "jiit")
 
-    # Status + progress
     c1, c2 = st.columns(2)
     with c1:
         st.markdown(
-            f"**Fixed-Cycle (JIIT)** &nbsp; {badge(jiit_fixed_st.get('state', 'pending'))}",
+            f"**Fixed-Cycle** &nbsp; {badge(jiit_fixed_st.get('state', 'pending'))}",
             unsafe_allow_html=True,
         )
         if jiit_fixed_st.get("state") == "running":
             st.progress(jiit_fixed_st.get("progress", 0))
     with c2:
         st.markdown(
-            f"**PPO (JIIT)** &nbsp; {badge(jiit_ppo_st.get('state', 'pending'))}",
+            f"**PPO** &nbsp; {badge(jiit_ppo_st.get('state', 'pending'))}",
             unsafe_allow_html=True,
         )
         if jiit_ppo_st.get("state") == "running":
@@ -783,12 +782,11 @@ with tab_jiit_train:
             "```"
         )
     else:
-        # Summary cards
         st.markdown("---")
-        cols = st.columns(3)
         jiit_fixed_wait = final_stats(jiit_fixed_df)["wait"] if jiit_fixed_df is not None else None
         jiit_ppo_wait   = final_stats(jiit_ppo_df)["wait"]   if jiit_ppo_df   is not None else None
 
+        cols = st.columns(3)
         with cols[0]:
             if jiit_fixed_wait is not None:
                 st.metric("Fixed-Cycle Wait", f"{jiit_fixed_wait:.1f} s")
@@ -800,7 +798,6 @@ with tab_jiit_train:
                 imp = (jiit_fixed_wait - jiit_ppo_wait) / jiit_fixed_wait * 100
                 st.metric("Improvement", f"{imp:.1f}%", delta=f"−{imp:.1f}%")
 
-        # Training curves
         fig_r = line_chart("PPO Reward per Episode — JIIT", "Reward")
         fig_w = line_chart("Mean Waiting Time per Episode — JIIT", "Waiting Time (s)")
 
@@ -809,7 +806,6 @@ with tab_jiit_train:
             add_trace(fig_w, jiit_ppo_df, "episode", "waiting_time", "PPO (JIIT)", "#10b981", 7)
 
         if jiit_fixed_df is not None:
-            # Fixed-cycle is 1 episode — draw as horizontal reference line
             fw = jiit_fixed_df["waiting_time"].iloc[-1]
             fig_w.add_hline(
                 y=fw,
@@ -821,33 +817,6 @@ with tab_jiit_train:
 
         st.plotly_chart(fig_r, use_container_width=True)
         st.plotly_chart(fig_w, use_container_width=True)
-
-        # Compare JIIT PPO vs single-intersection PPO
-        single_ppo_df = load_single("ppo")
-        if jiit_ppo_df is not None and single_ppo_df is not None:
-            st.markdown("---")
-            st.markdown("#### JIIT PPO vs Single-Intersection PPO")
-            compare_labels = ["Single Intersection PPO", "JIIT PPO"]
-            compare_vals   = [
-                final_stats(single_ppo_df)["wait"],
-                final_stats(jiit_ppo_df)["wait"],
-            ]
-            compare_colors = ["#10b981", "#6366f1"]
-            fig = go.Figure(go.Bar(
-                x=compare_labels, y=compare_vals,
-                marker_color=compare_colors,
-                text=[f"{v:.1f} s" for v in compare_vals],
-                textposition="outside",
-                textfont=dict(color="#94a3b8"),
-            ))
-            fig.update_layout(
-                title=dict(text="Mean Waiting Time — PPO on both networks",
-                           font_color="#e2e8f0", font_size=14),
-                yaxis_title="Mean Waiting Time (s)",
-                showlegend=False,
-                **CHART,
-            )
-            st.plotly_chart(fig, use_container_width=True)
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -933,3 +902,14 @@ with tab_realworld:
                 "padding:4rem;text-align:center;color:#475569;'>Map tile preview unavailable</div>",
                 unsafe_allow_html=True,
             )
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# TAB 8 — CUSTOM INTERSECTION  (remove tab_custom entry + this block to disable)
+# ════════════════════════════════════════════════════════════════════════════
+with tab_custom:
+    try:
+        from custom_intersection import render_custom_tab
+        render_custom_tab()
+    except ImportError:
+        st.info("Custom intersection module not found.")

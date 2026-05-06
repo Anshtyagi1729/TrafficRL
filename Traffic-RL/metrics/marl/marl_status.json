@@ -1,1 +1,7 @@
-{"state": "done", "episode": 138, "total_episodes": 138, "agent_rewards": {"1": -0.02, "2": -0.05, "5": -0.04, "6": -0.04}, "updated_at": 1777610280.2071013}
+{
+  "state": "done",
+  "episode": 129,
+  "total_episodes": 277,
+  "agent_rewards": { "1": 0.0, "2": -0.0, "5": -0.04, "6": -0.02 },
+  "updated_at": 1777898657.2002974
+}
